@@ -1,0 +1,11 @@
+http://dbpedia.org/ontology/alias
+http://dbpedia.org/ontology/headquarter
+http://dbpedia.org/ontology/residence
+http://dbpedia.org/ontology/membership
+http://dbpedia.org/ontology/formationDate
+http://dbpedia.org/ontology/foundedBy
+http://dbpedia.org/ontology/subsidiary
+http://dbpedia.org/ontology/birthPlace
+http://dbpedia.org/ontology/origin
+http://dbpedia.org/ontology/spouse
+http://dbpedia.org/ontology/title
