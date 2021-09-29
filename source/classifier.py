@@ -177,5 +177,4 @@ class BertProjector(Module):
  #               max_sim = sim
  #       return closest_candidate
 
-
         #esperimento: anzichè confrontarlo solo con i vettori die 20 predicati che ti interssano, confronta con tutti, e trova a chi si avvicina di più

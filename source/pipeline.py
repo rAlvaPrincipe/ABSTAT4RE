@@ -24,7 +24,6 @@ class Pipeline:
         self.device = 'cuda' if cuda.is_available() else 'cpu'
 
 
-
     def process_dataset(self, mode, path=None, output=None, dump=None):
         if mode=="load":
             return  Dataset(dump)
@@ -111,4 +110,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

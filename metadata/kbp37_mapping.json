@@ -1,5 +1,6 @@
 {
 	"no_relation": "no_relation",
+<<<<<<< HEAD
 	"org:city_of_headquarters": "http://dbpedia.org/ontology/headquarter_@1",
 	"org:country_of_headquarters": "http://dbpedia.org/ontology/headquarter_@2",
 	"org:stateorprovince_of_headquarters": "http://dbpedia.org/ontology/headquarter_@3",
@@ -19,3 +20,24 @@
 	"org:founded": "http://dbpedia.org/ontology/formationDate",
 	"org:founded_by": "http://dbpedia.org/ontology/foundedBy"
 }
+=======
+	"org:alternate_names": "http://dbpedia.org/ontology/alias",
+	"org:city_of_headquarters": "http://dbpedia.org/ontology/headquarter",
+	"org:country_of_headquarters": "http://dbpedia.org/ontology/headquarter",
+	"org:founded": "http://dbpedia.org/ontology/formationDate",
+	"org:founded_by": "http://dbpedia.org/ontology/foundedBy",
+	"org:members": "http://dbpedia.org/ontology/membership",
+	"org:stateorprovince_of_headquarters": "http://dbpedia.org/ontology/headquarter",
+	"org:subsidiaries": "http://dbpedia.org/ontology/subsidiary",
+	"org:top_members/employees": "http://dbpedia.org/ontology/membership",
+	"per:alternate_names": "http://dbpedia.org/ontology/alias",
+	"per:cities_of_residence": "http://dbpedia.org/ontology/residence",
+	"per:countries_of_residence": "http://dbpedia.org/ontology/residence",
+	"per:country_of_birth": "http://dbpedia.org/ontology/birthPlace",
+	"per:employee_of": "http://dbpedia.org/ontology/membership",
+	"per:origin": "http://dbpedia.org/ontology/origin",
+	"per:spouse": "http://dbpedia.org/ontology/spouse",
+	"per:stateorprovinces_of_residence": "http://dbpedia.org/ontology/residence",
+	"per:title": "http://dbpedia.org/ontology/title"
+}
+>>>>>>> 1e0355768f8c57bc49c47f74083f468431dcd2e9

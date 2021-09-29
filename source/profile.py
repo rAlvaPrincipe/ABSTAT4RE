@@ -2,7 +2,6 @@ import pandas as pd
 from pandas.core.frame import DataFrame
 from sparql import Sparql as sparql
 
-
 class Profile:
 
     # takes as input the directory path with profiles, the name of the statistics to consider (frequency, instances) a boolean clean
@@ -193,6 +192,3 @@ class Profile:
             artifical_props_df  = artifical_props_df.append(org_top_members_employees)
 
         return artifical_props_df
-
-
-#profile = Profile("data/profiles/dbpedia-2016-10-full", "frequency", True, True)
