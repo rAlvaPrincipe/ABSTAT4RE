@@ -1,5 +1,4 @@
 from torch.utils import data
-from property_space import PropertySpace
 from profile import Profile
 from dataset import Dataset
 from re_dataset import REDataset
@@ -11,6 +10,7 @@ from torch.nn.modules.loss import CosineEmbeddingLoss
 import dataset_encoder as dataen
 import json
 from torch.nn import CosineSimilarity
+from property_space import PropertySpace
 
 class Pipeline:
 
@@ -24,6 +24,7 @@ class Pipeline:
         self.device = 'cuda' if cuda.is_available() else 'cpu'
 
 
+
     def process_dataset(self, mode, path=None, output=None, dump=None):
         if mode=="load":
             return  Dataset(dump)
@@ -35,24 +36,13 @@ class Pipeline:
 
     # load: carica a partire da un dump
     # create: il path è riferito alla dir del profilo e il risultato va salvato in output
-    # dim_reduc: il path è riferito a un dump, proplist è la lista di property da tenere da tenere, in fine salva in output
-    def process_property_space(self, mode, dump=None, profile=None, output=None, proplist=None, mappings=None):
+    def process_property_space(self, mode, dump=None, profile=None, output=None):
         if mode == "load":
             return PropertySpace(dump)
         elif mode == "create":
             space = PropertySpace(profile)
             space.save(output)#(self.spaces_dir + "/PS_clean_>10-freq.csv")
             return space
-        elif mode == "dim_reduc":
-            space = PropertySpace(dump)#(self.spaces_dir + "/PS_clean_>10-freq.csv")
-            props = list()
-            with open(proplist, 'r') as file:
-                while line := file.readline().rstrip():
-                    props.append(line)
-
-            #return space.get_subspace(props, False, True, self.spaces_dir+"/PS_kbp37.csv" )
-            return space.get_subspace(props, True, True, output,True, mappings)
-
 
     def prepare4training(self, batch, dataset, space=None, mappings=None, output=None, dump=None):
         labels = dataset["rel"]
@@ -71,33 +61,31 @@ class Pipeline:
         return dataset_re_loader
 
 
+
 def main():
-    p = Pipeline("/home/ralvaprincipe/ABSTAT4RE/")
+    p = Pipeline("/home/renzo/rAlvaPrincipe/ABSTAT4RE/")
 
-    # ----------------------------------------- Profile ----------------------------------------------
-    #profile = Profile(p.profiles_dir+"/dbpedia-2016-10", "frequency", True)
-    #profile = Profile(p.profiles_dir+"/dbpedia-2016-10", "frequency", False)
+    ################################################### Profile ####################################################################################################
+   # profile = Profile(p.profiles_dir+"/dbpedia-2016-10-full", "frequency", clean=True, artificial_props=True)
 
 
-    # --------------------------------------- Property Space -------------------------------------------
+    #################################################### Property Space ##############################################################################################
     with open(p.metadata_dir+"kbp37_mapping.json") as json_file:
         mappings = json.load(json_file)
 
     #space = p.process_property_space(mode="create", profile=profile, output=p.spaces_dir+"/PS_clean_>10-freq.csv" )
-    #space = p.process_property_space(mode="dim_reduc", dump=p.spaces_dir+"/PS_clean_>10-freq.csv", output=p.spaces_dir+"/PS_kbp37_nonZeroDims.csv", proplist=p.metadata_dir+"/kbp37_propertylist.txt", mappings=mappings)
-    space = p.process_property_space(mode="load", dump=p.spaces_dir+"/PS_kbp37_nonZeroDims.csv", mappings=mappings)
+    space = p.process_property_space(mode="load", dump=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims.csv")
 
-    #-------------------------------------------- Dataset -------------------------------------------------
-    #train = p.process_property_space(mode="create", path=p.datasets_dir+"/KBP37/train.txt", output=p.datasetsProc_dir+"/kbp37_CNLP_train.csv")
-    #validation = p.process_property_space(mode="create", path=p.datasets_dir+"/KBP37/dev.txt", output=p.datasetsProc_dir+"/kbp37_CNLP_validation.csv")
-    #test = p.process_property_space(mode="create", path=p.datasets_dir+"/KBP37/test.txt", output=p.datasetsProc_dir+"/kbp37_CNLP_test.csv")
 
+
+    ################################################### Dataset #######################################################################################################
     train = p.process_dataset(mode="load", dump=p.datasetsProc_dir+"/kbp37_CNLP_train.csv")
     validation = p.process_dataset(mode="load", dump=p.datasetsProc_dir+"/kbp37_CNLP_validation.csv")
     test = p.process_dataset(mode="load", dump=p.datasetsProc_dir+"/kbp37_CNLP_test.csv")
     
 
-    #------------------------------------------- DataLoader --------------------------------------
+
+    ################################################### DataLoader ######################################################################################################
     batch = 32
    # train_loader = p.prepare4training(batch=batch, dataset=train.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_train_onlyNonZeroDims.pt")
    # val_loader = p.prepare4training(batch=batch, dataset=validation.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_val_onlyNonZeroDims.pt")
@@ -107,7 +95,8 @@ def main():
     #test_loader = p.prepare4training(batch=batch, dataset=test.df(), dump=p.vec_labels+"labels-vec_kbp37_val_onlyNonZeroDims.pt", space=space.df())
 
 
-    # ---------------------------------------- Classifier -----------------------------------------
+
+    ################################################### Classifier ######################################################################################################
     classifier = BertProjector(space.df().shape[1], True).to(p.device)
     lr = 3e-5
     epochs = 30
@@ -117,7 +106,9 @@ def main():
     classifier.train_loop(train_loader, val_loader, criterion, optimizer, epochs, p.device, space.df(), mappings)
 
 
+    ########################################################################################################################################################################
 
 
 if __name__ == "__main__":
     main()
+
