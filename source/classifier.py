@@ -45,7 +45,7 @@ class BertProjector(Module):
             print("epoch {}".format(e+1))
             train_epoch_loss = 0
           #  count =0
-            for sentences, masks, vec_labels, labels in train_loader:
+            for sentences, masks, vec_labels, rel_labels, prop_labels in train_loader:
             #    iz=0
                 current_batch_size = sentences.shape[0]
                 outputs = self(sentences.to(device), masks.to(device))
@@ -58,13 +58,13 @@ class BertProjector(Module):
             #    if count == 3:
              #       break
             
-            if e > 15:
+            if (e + 1) % 4 == 0:
                 val_epoch_loss, val_epoch_acc, tot_epoch_corects = 0, 0, 0
                 epoch_labels, epoch_predictions = tuple(), tuple()
                 with torch.no_grad():
                     self.eval()
                     #count=0
-                    for sentences, masks, vec_labels, labels in val_loader:
+                    for sentences, masks, vec_labels, rel_labels, prop_labels in val_loader:
                         outputs = self(sentences.to(device), masks.to(device))
                         loss = criterion(outputs, vec_labels.to(device), torch.ones(vec_labels.shape[0]).to(device))
 
@@ -74,7 +74,8 @@ class BertProjector(Module):
                         #print(labels_ricavati)
 
                         #self.print_metrics(labels_ricavati, self.convert(outputs, space, device))
-                        epoch_labels +=  self.convert(vec_labels.to(device), space, device)
+                        ###epoch_labels +=  self.convert(vec_labels.to(device), space, device)
+                        epoch_labels += prop_labels
                         epoch_predictions += self.convert(outputs, space, device)
 
 
@@ -137,6 +138,8 @@ class BertProjector(Module):
 
 
     def print_metrics(self, labels:list, predictions):
+        print("ground truth labels: {}".format(set(labels)))
+        print("prediction labels: {}".format(set(predictions)))
         print(metrics.classification_report(labels, predictions, labels=list(set(labels))))
         print("accuracy: {}".format(metrics.accuracy_score(labels, predictions)))
 

@@ -10,16 +10,13 @@ class PropertySpace:
     # takes as input a profile or a dump path
     def __init__(self, *args):
         if(isinstance(args[0], Profile)):
-            print("create")
             self.profile =  args[0].df()
             self.dimensions = pd.DataFrame()
             self.space = pd.DataFrame()
 
             self.buid_space()
             self.space = self.post_processing()
-            self.save("prova_prop_space.csv")
         else:
-            print("load")
             self.read(args[0])
 
 

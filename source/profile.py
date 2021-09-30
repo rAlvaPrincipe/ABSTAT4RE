@@ -129,66 +129,65 @@ class Profile:
         print(city_of_headquarters)
         artifical_props_df  = artifical_props_df.append(city_of_headquarters)
         
-        if True:
-            obj_constraints = ["http://www.wikidata.org/entity/Q6256", "http://dbpedia.org/ontology/Country", "http://schema.org/Country", "http://wikidata.dbpedia.org/ontology/Country"]
-            country_of_headquarters = self.build_artificial_property("org:country_of_headquarters", preds_constraints, subj_constraints, obj_constraints)
-            print(country_of_headquarters)
-            artifical_props_df  = artifical_props_df.append(country_of_headquarters)
+        obj_constraints = ["http://www.wikidata.org/entity/Q6256", "http://dbpedia.org/ontology/Country", "http://schema.org/Country", "http://wikidata.dbpedia.org/ontology/Country"]
+        country_of_headquarters = self.build_artificial_property("org:country_of_headquarters", preds_constraints, subj_constraints, obj_constraints)
+        print(country_of_headquarters)
+        artifical_props_df  = artifical_props_df.append(country_of_headquarters)
 
-            obj_constraints = ["http://dbpedia.org/ontology/AdministrativeRegion", "http://schema.org/AdministrativeArea", "http://www.wikidata.org/entity/Q3455524"]
-            stateorprovince_of_headquarters = self.build_artificial_property("org:stateorprovince_of_headquarters", preds_constraints, subj_constraints, obj_constraints)
-            print(stateorprovince_of_headquarters)
-            artifical_props_df  = artifical_props_df.append(stateorprovince_of_headquarters)
-
-
-            preds_constraints = self.approximated_match(["residence"], "predicate")
-            subj_constraints = self.subtypes_match(["http://dbpedia.org/ontology/Person"])
-            obj_constraints = ['http://wikidata.dbpedia.org/ontology/City', 'http://schema.org/City', 'http://wikidata.dbpedia.org/ontology/City', 'http://www.wikidata.org/entity/Q515']
-            cities_of_residence = self.build_artificial_property("per:cities_of_residence", preds_constraints, subj_constraints, obj_constraints)
-            print(cities_of_residence)
-            artifical_props_df  = artifical_props_df.append(cities_of_residence)
-
-            obj_constraints = ["http://www.wikidata.org/entity/Q6256", "http://dbpedia.org/ontology/Country", "http://schema.org/Country", "http://wikidata.dbpedia.org/ontology/Country"]
-            countries_of_residence = self.build_artificial_property("per:countries_of_residence", preds_constraints, subj_constraints, obj_constraints)
-            print(countries_of_residence)
-            artifical_props_df  = artifical_props_df.append(countries_of_residence)
-
-            obj_constraints = ["http://dbpedia.org/ontology/AdministrativeRegion", "http://schema.org/AdministrativeArea", "http://www.wikidata.org/entity/Q3455524"]
-            stateorprovinces_of_residence = self.build_artificial_property("per:stateorprovinces_of_residence", preds_constraints, subj_constraints, obj_constraints)
-            print(stateorprovinces_of_residence)
-            artifical_props_df  = artifical_props_df.append(stateorprovinces_of_residence)
+        obj_constraints = ["http://dbpedia.org/ontology/AdministrativeRegion", "http://schema.org/AdministrativeArea", "http://www.wikidata.org/entity/Q3455524"]
+        stateorprovince_of_headquarters = self.build_artificial_property("org:stateorprovince_of_headquarters", preds_constraints, subj_constraints, obj_constraints)
+        print(stateorprovince_of_headquarters)
+        artifical_props_df  = artifical_props_df.append(stateorprovince_of_headquarters)
 
 
-            preds_constraints = self.approximated_match(["alias", "alternatename"], "predicate")
-            subj_constraints = self.subtypes_match(["http://dbpedia.org/ontology/Organisation"])
-            obj_constraints = []
-            org_alternates_names = self.build_artificial_property("org:alternate_names", preds_constraints, subj_constraints, obj_constraints)
-            print(org_alternates_names)
-            artifical_props_df  = artifical_props_df.append(org_alternates_names)
+        preds_constraints = self.approximated_match(["residence"], "predicate")
+        subj_constraints = self.subtypes_match(["http://dbpedia.org/ontology/Person"])
+        obj_constraints = ['http://wikidata.dbpedia.org/ontology/City', 'http://schema.org/City', 'http://wikidata.dbpedia.org/ontology/City', 'http://www.wikidata.org/entity/Q515']
+        cities_of_residence = self.build_artificial_property("per:cities_of_residence", preds_constraints, subj_constraints, obj_constraints)
+        print(cities_of_residence)
+        artifical_props_df  = artifical_props_df.append(cities_of_residence)
 
-            subj_constraints = self.subtypes_match(["http://dbpedia.org/ontology/Person"])
-            per_alternates_names = self.build_artificial_property("per:alternate_names", preds_constraints, subj_constraints, obj_constraints)
-            print(per_alternates_names)
-            artifical_props_df  = artifical_props_df.append(per_alternates_names)
+        obj_constraints = ["http://www.wikidata.org/entity/Q6256", "http://dbpedia.org/ontology/Country", "http://schema.org/Country", "http://wikidata.dbpedia.org/ontology/Country"]
+        countries_of_residence = self.build_artificial_property("per:countries_of_residence", preds_constraints, subj_constraints, obj_constraints)
+        print(countries_of_residence)
+        artifical_props_df  = artifical_props_df.append(countries_of_residence)
+
+        obj_constraints = ["http://dbpedia.org/ontology/AdministrativeRegion", "http://schema.org/AdministrativeArea", "http://www.wikidata.org/entity/Q3455524"]
+        stateorprovinces_of_residence = self.build_artificial_property("per:stateorprovinces_of_residence", preds_constraints, subj_constraints, obj_constraints)
+        print(stateorprovinces_of_residence)
+        artifical_props_df  = artifical_props_df.append(stateorprovinces_of_residence)
 
 
-            preds_constraints = self.approximated_match(["employee", "member"], "predicate")
-            subj_constraints =  self.subtypes_match(["http://dbpedia.org/ontology/Organisation"])
-            obj_constraints =  self.subtypes_match(["http://dbpedia.org/ontology/Organisation"])
-            org_members = self.build_artificial_property("org:members", preds_constraints, subj_constraints, obj_constraints)
-            print(org_members)
-            artifical_props_df  = artifical_props_df.append(org_members)
+        preds_constraints = self.approximated_match(["alias", "alternatename"], "predicate")
+        subj_constraints = self.subtypes_match(["http://dbpedia.org/ontology/Organisation"])
+        obj_constraints = []
+        org_alternates_names = self.build_artificial_property("org:alternate_names", preds_constraints, subj_constraints, obj_constraints)
+        print(org_alternates_names)
+        artifical_props_df  = artifical_props_df.append(org_alternates_names)
 
-            subj_constraints = self.subtypes_match(["http://dbpedia.org/ontology/Person"])
-            obj_constraints =  self.subtypes_match(["http://dbpedia.org/ontology/Organisation"])
-            per_employee_of = self.build_artificial_property("per:employee_of", preds_constraints, subj_constraints, obj_constraints)
-            print(per_employee_of)
-            artifical_props_df  = artifical_props_df.append(per_employee_of)
+        subj_constraints = self.subtypes_match(["http://dbpedia.org/ontology/Person"])
+        per_alternates_names = self.build_artificial_property("per:alternate_names", preds_constraints, subj_constraints, obj_constraints)
+        print(per_alternates_names)
+        artifical_props_df  = artifical_props_df.append(per_alternates_names)
 
-            subj_constraints =  self.subtypes_match(["http://dbpedia.org/ontology/Organisation"])
-            obj_constraints =  self.subtypes_match(["http://dbpedia.org/ontology/Person"])
-            org_top_members_employees = self.build_artificial_property("org:top_members_employees", preds_constraints, subj_constraints, obj_constraints)
-            print(org_top_members_employees)
-            artifical_props_df  = artifical_props_df.append(org_top_members_employees)
+
+        preds_constraints = self.approximated_match(["employee", "member"], "predicate")
+        subj_constraints =  self.subtypes_match(["http://dbpedia.org/ontology/Organisation"])
+        obj_constraints =  self.subtypes_match(["http://dbpedia.org/ontology/Organisation"])
+        org_members = self.build_artificial_property("org:members", preds_constraints, subj_constraints, obj_constraints)
+        print(org_members)
+        artifical_props_df  = artifical_props_df.append(org_members)
+
+        subj_constraints = self.subtypes_match(["http://dbpedia.org/ontology/Person"])
+        obj_constraints =  self.subtypes_match(["http://dbpedia.org/ontology/Organisation"])
+        per_employee_of = self.build_artificial_property("per:employee_of", preds_constraints, subj_constraints, obj_constraints)
+        print(per_employee_of)
+        artifical_props_df  = artifical_props_df.append(per_employee_of)
+
+        subj_constraints =  self.subtypes_match(["http://dbpedia.org/ontology/Organisation"])
+        obj_constraints =  self.subtypes_match(["http://dbpedia.org/ontology/Person"])
+        org_top_members_employees = self.build_artificial_property("org:top_members_employees", preds_constraints, subj_constraints, obj_constraints)
+        print(org_top_members_employees)
+        artifical_props_df  = artifical_props_df.append(org_top_members_employees)
 
         return artifical_props_df
