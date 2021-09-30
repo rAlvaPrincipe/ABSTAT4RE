@@ -124,17 +124,17 @@ class Profile:
         artifical_props_df = DataFrame()
         preds_constraints = self.approximated_match(["headquarter"], "predicate")
         subj_constraints = self.subtypes_match(["http://dbpedia.org/ontology/Organisation"])
-        obj_constraints = ['http://wikidata.dbpedia.org/ontology/City', 'http://schema.org/City', 'http://wikidata.dbpedia.org/ontology/City', 'http://www.wikidata.org/entity/Q515']
+        obj_constraints = ['http://dbpedia.org/ontology/City', 'http://schema.org/City', 'http://www.wikidata.org/entity/Q515', 'http://wikidata.dbpedia.org/ontology/City']
         city_of_headquarters = self.build_artificial_property("org:city_of_headquarters", preds_constraints, subj_constraints, obj_constraints)
         print(city_of_headquarters)
         artifical_props_df  = artifical_props_df.append(city_of_headquarters)
         
-        obj_constraints = ["http://www.wikidata.org/entity/Q6256", "http://dbpedia.org/ontology/Country", "http://schema.org/Country", "http://wikidata.dbpedia.org/ontology/Country"]
+        obj_constraints = ["http://dbpedia.org/ontology/Country", "http://schema.org/Country", "http://www.wikidata.org/entity/Q6256", "http://wikidata.dbpedia.org/ontology/Country"]
         country_of_headquarters = self.build_artificial_property("org:country_of_headquarters", preds_constraints, subj_constraints, obj_constraints)
         print(country_of_headquarters)
         artifical_props_df  = artifical_props_df.append(country_of_headquarters)
 
-        obj_constraints = ["http://dbpedia.org/ontology/AdministrativeRegion", "http://schema.org/AdministrativeArea", "http://www.wikidata.org/entity/Q3455524"]
+        obj_constraints = ["http://dbpedia.org/ontology/AdministrativeRegion", "http://schema.org/AdministrativeArea", "http://www.wikidata.org/entity/Q3455524", "http://wikidata.dbpedia.org/ontology/AdministrativeRegion"]
         stateorprovince_of_headquarters = self.build_artificial_property("org:stateorprovince_of_headquarters", preds_constraints, subj_constraints, obj_constraints)
         print(stateorprovince_of_headquarters)
         artifical_props_df  = artifical_props_df.append(stateorprovince_of_headquarters)
@@ -142,17 +142,17 @@ class Profile:
 
         preds_constraints = self.approximated_match(["residence"], "predicate")
         subj_constraints = self.subtypes_match(["http://dbpedia.org/ontology/Person"])
-        obj_constraints = ['http://wikidata.dbpedia.org/ontology/City', 'http://schema.org/City', 'http://wikidata.dbpedia.org/ontology/City', 'http://www.wikidata.org/entity/Q515']
+        obj_constraints = ['http://dbpedia.org/ontology/City', 'http://schema.org/City', 'http://www.wikidata.org/entity/Q515', 'http://wikidata.dbpedia.org/ontology/City']
         cities_of_residence = self.build_artificial_property("per:cities_of_residence", preds_constraints, subj_constraints, obj_constraints)
         print(cities_of_residence)
         artifical_props_df  = artifical_props_df.append(cities_of_residence)
 
-        obj_constraints = ["http://www.wikidata.org/entity/Q6256", "http://dbpedia.org/ontology/Country", "http://schema.org/Country", "http://wikidata.dbpedia.org/ontology/Country"]
+        obj_constraints = ["http://dbpedia.org/ontology/Country", "http://schema.org/Country", "http://www.wikidata.org/entity/Q6256", "http://wikidata.dbpedia.org/ontology/Country"]
         countries_of_residence = self.build_artificial_property("per:countries_of_residence", preds_constraints, subj_constraints, obj_constraints)
         print(countries_of_residence)
         artifical_props_df  = artifical_props_df.append(countries_of_residence)
 
-        obj_constraints = ["http://dbpedia.org/ontology/AdministrativeRegion", "http://schema.org/AdministrativeArea", "http://www.wikidata.org/entity/Q3455524"]
+        obj_constraints = ["http://dbpedia.org/ontology/AdministrativeRegion", "http://schema.org/AdministrativeArea", "http://www.wikidata.org/entity/Q3455524", "http://wikidata.dbpedia.org/ontology/AdministrativeRegion"]
         stateorprovinces_of_residence = self.build_artificial_property("per:stateorprovinces_of_residence", preds_constraints, subj_constraints, obj_constraints)
         print(stateorprovinces_of_residence)
         artifical_props_df  = artifical_props_df.append(stateorprovinces_of_residence)

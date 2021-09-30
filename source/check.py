@@ -20,12 +20,13 @@ class Check:
         print(count)
 
 
-    def check2(val_loader, space):
+    def check_label_vectorization(val_loader, space):
         for sentences, masks, vec_labels, rel_labels, prop_labels in val_loader:
             Check.convert(vec_labels, space, prop_labels)
             #for rel, prop in zip(rel_labels, prop_labels):
             #    print((rel, prop ))
         print("end")
+        
 
     def convert(outputs, space, prop_labels):
         cos = CosineSimilarity(dim=0)
