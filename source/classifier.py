@@ -47,7 +47,7 @@ class BertProjector(Module):
             print("epoch {}".format(e+1))
             train_epoch_loss = 0
 
-            for sentences, masks, vec_labels, rel_labels, prop_labels in train_loader:
+            for sentences, masks, vec_labels, rel_labels, prop_labels, int_labels in train_loader:
                 current_batch_size = sentences.shape[0]
                 outputs = self(sentences.to(device), masks.to(device))
                 optimizer.zero_grad()
@@ -61,7 +61,7 @@ class BertProjector(Module):
                 epoch_labels, epoch_predictions = tuple(), tuple()
                 with torch.no_grad():
                     self.eval()
-                    for sentences, masks, vec_labels, rel_labels, prop_labels in val_loader:
+                    for sentences, masks, vec_labels, rel_labels, prop_labels, int_labels in val_loader:
                         outputs = self(sentences.to(device), masks.to(device))
                         loss = criterion(outputs, vec_labels.to(device), torch.ones(vec_labels.shape[0]).to(device))
 
