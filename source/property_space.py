@@ -113,7 +113,9 @@ class PropertySpace:
         subspace.drop(to_drop, axis=0, inplace=True)
 
         # setting artificial class "no_relation"
-        subspace.loc["no_relation"] = -1
+        subspace["add_no_relation"] = 0
+        subspace.loc["no_relation"] = 0
+        subspace.loc["no_relation", "add_no_relation"] = 1
         return subspace
 
 

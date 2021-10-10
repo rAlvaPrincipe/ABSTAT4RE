@@ -73,22 +73,23 @@ def main():
     p = Pipeline("/home/ralvaprincipe/ABSTAT4RE/")
 
     ################################################### Profile ####################################################################################################
-    #profile = Profile(p.profiles_dir+"/dbpedia-2016-10-full", "frequency", clean=True, artificial_props=True)
+   # profile = Profile(p.profiles_dir+"/dbpedia-2016-10-full", "frequency", clean=True, artificial_props=True)
 
     #profile = Profile(p.profiles_dir+"/dbpedia-2016-10-full", "frequency", clean=False, artificial_props=False)
     #check.check_profile(profile.df())
     
     
     #################################################### Property Space ##############################################################################################
-    #space = p.process_property_space(mode="create", profile=profile, output=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims.csv" )
-    space = p.process_property_space(mode="load", dump=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims.csv")
+    # space = p.process_property_space(mode="create", profile=profile, output=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims_NoRelFixed.csv" )
+    #space = p.process_property_space(mode="load", dump=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims.csv")
+    space = p.process_property_space(mode="load", dump=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims_NoRelFixed.csv")
 
   #  check.convert_pro(space.df())
-   # check.check_PS(space.df())
+  #  check.check_PS(space.df())
     ################################################### Dataset #######################################################################################################
     train = p.process_dataset(mode="load", dump=p.datasetsProc_dir+"/kbp37_CNLP_train.csv")
     validation = p.process_dataset(mode="load", dump=p.datasetsProc_dir+"/kbp37_CNLP_validation.csv")
-   # test = p.process_dataset(mode="load", dump=p.datasetsProc_dir+"/kbp37_CNLP_test.csv")
+    test = p.process_dataset(mode="load", dump=p.datasetsProc_dir+"/kbp37_CNLP_test.csv")
     
 
 
@@ -100,32 +101,36 @@ def main():
     #check.check_vec_labels_correcteness(validation.df(), space.df(), mappings)
 
     batch = 32
-    #train_loader = p.prepare4training(batch=batch, dataset=train.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims.pt")
-    #val_loader = p.prepare4training(batch=batch, dataset=validation.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims.pt")
-    #test_loader = p.prepare4training(batch=batch, dataset=test.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_test_dbp2016-full-onlyNonZeroDims.pt")
-    train_loader = p.prepare4training(batch=batch, dataset=train.df(), dump=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims.pt", space=space.df(), mappings=mappings)
-    val_loader = p.prepare4training(batch=batch, dataset=validation.df(), dump=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims.pt", space=space.df(),  mappings=mappings)
-   # test_loader = p.prepare4training(batch=batch, dataset=test.df(), dump=p.vec_labels+"labels-vec_kbp37_test_dbp2016-full-onlyNonZeroDims.pt", space=space.df(),  mappings=mappings)
+    #train_loader = p.prepare4training(batch=batch, dataset=train.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt")
+    #val_loader = p.prepare4training(batch=batch, dataset=validation.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt")
+    #test_loader = p.prepare4training(batch=batch, dataset=test.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_test_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt")
+    #train_loader = p.prepare4training(batch=batch, dataset=train.df(), dump=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims.pt", space=space.df(), mappings=mappings)
+    #val_loader = p.prepare4training(batch=batch, dataset=validation.df(), dump=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims.pt", space=space.df(),  mappings=mappings)
+    #test_loader = p.prepare4training(batch=batch, dataset=test.df(), dump=p.vec_labels+"labels-vec_kbp37_test_dbp2016-full-onlyNonZeroDims.pt", space=space.df(),  mappings=mappings)
+    train_loader = p.prepare4training(batch=batch, dataset=train.df(), dump=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt", space=space.df(), mappings=mappings)
+    val_loader = p.prepare4training(batch=batch, dataset=validation.df(), dump=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt", space=space.df(),  mappings=mappings)
+    test_loader = p.prepare4training(batch=batch, dataset=test.df(), dump=p.vec_labels+"labels-vec_kbp37_test_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt", space=space.df(),  mappings=mappings)
 
 
    # check.check_label_vectorization(val_loader, space=space.df())
 
 
     ################################################### Baselilne ######################################################################################################
-    classifier = BaselineClassifier(space.df().shape[1], True).to(p.device)
-    lr = 3e-5
-    epochs = 40
-    criterion = CrossEntropyLoss()
-    #criterion = NLLLoss()
-    optimizer = torch.optim.Adam(params = classifier.parameters(), lr=lr)
+    #    classifier = BaselineClassifier(space.df().shape[1], True).to(p.device)
+    #    lr = 3e-5
+    #    epochs = 70
+    #    criterion = CrossEntropyLoss()
+    #    #criterion = NLLLoss()
+    #    optimizer = torch.optim.Adam(params = classifier.parameters(), lr=lr)
 
-    classifier.train_loop(train_loader, val_loader, criterion, optimizer, epochs, p.device, space.df(), mappings)
+    #    classifier.train_loop(train_loader, val_loader, criterion, optimizer, epochs, p.device, space.df(), mappings)
 
 
     ################################################### Classifier ######################################################################################################
+
     classifier = BertProjector(space.df().shape[1], True).to(p.device)
     lr = 3e-5
-    epochs = 30
+    epochs = 70
     criterion = CosineEmbeddingLoss() 
     optimizer = torch.optim.Adam(params = classifier.parameters(), lr=lr)
 
