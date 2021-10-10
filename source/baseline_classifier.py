@@ -4,6 +4,8 @@ from torch.nn import Module, Linear, ReLU, Sigmoid, Tanh, Dropout
 import torch
 import pandas as pd
 from sklearn import metrics
+from transformers import DistilBertModelWithHeads
+from transformers import AdapterConfig, DistilBertConfig
 
 class Layer(Module):
     def __init__(self, inp, out, act):
@@ -19,10 +21,17 @@ class BaselineClassifier(Module):
     def __init__(self, n_classes, freeze_bert):
         super().__init__()
 
-        self.bert = DistilBertModel.from_pretrained("distilbert-base-uncased")
-        if freeze_bert:
-            for param in self.bert.parameters():
-                param.requires_grad = False
+    # DISTILBERT + Adapters
+        self.bert = DistilBertModelWithHeads.from_pretrained("distilbert-base-uncased")
+        config = AdapterConfig.load("pfeiffer", reduction_factor=16)
+        self.bert.add_adapter("prova",config=config)
+        self.bert.train_adapter(["prova"])
+
+      # DISTILBERT standard
+     #   self.bert = DistilBertModel.from_pretrained("distilbert-base-uncased")
+     #   if freeze_bert:
+     #       for param in self.bert.parameters():
+     #           param.requires_grad = False
 
         self.fc1 = Layer(768, 256, ReLU)
         self.fc2 = Layer(256, 64, ReLU)
@@ -54,7 +63,7 @@ class BaselineClassifier(Module):
                 optimizer.step()
                 train_epoch_loss += loss  
             
-            if (e + 1) % 2 == 0:
+            if (e + 1) % 3 == 0:
                 val_epoch_loss, val_epoch_acc, tot_epoch_corects = 0, 0, 0
                 epoch_labels, epoch_predictions = tuple(), tuple()
               
@@ -82,7 +91,7 @@ class BaselineClassifier(Module):
                 self.train()
                 train_loss = train_epoch_loss/len(train_loader)
                 val_loss = val_epoch_loss/len(val_loader) 
-                
+
                 print("Epoch: {}/{}.. ".format(e+1, epochs),
                     "Training Loss: {:.3f}.. ".format(train_loss),
                     "Validation Loss: {:.3f}.. ".format(val_loss))
@@ -102,8 +111,8 @@ class BaselineClassifier(Module):
 
 
     def print_metrics(self, labels:list, predictions):
-        print("ground truth labels: {}".format(set(labels)))
-        print("prediction labels: {}".format(set(predictions)))
+       # print("ground truth labels: {}".format(set(labels)))
+       # print("prediction labels: {}".format(set(predictions)))
         print(metrics.classification_report(labels, predictions, labels=list(set(labels))))
         print("accuracy: {}".format(metrics.accuracy_score(labels, predictions)))
 

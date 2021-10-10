@@ -23,10 +23,17 @@ class BertProjector(Module):
     def __init__(self, n_classes, freeze_bert):
         super().__init__()
 
-        self.bert = DistilBertModel.from_pretrained("distilbert-base-uncased")
-        if freeze_bert:
-            for param in self.bert.parameters():
-                param.requires_grad = False
+    # DISTILBERT + Adapters
+        self.bert = DistilBertModelWithHeads.from_pretrained("distilbert-base-uncased")
+        config = AdapterConfig.load("pfeiffer", reduction_factor=16)
+        self.bert.add_adapter("prova",config=config)
+        self.bert.train_adapter(["prova"])
+
+      # DISTILBERT standard
+      #  self.bert = DistilBertModel.from_pretrained("distilbert-base-uncased")
+      #  if freeze_bert:
+      #      for param in self.bert.parameters():
+      #          param.requires_grad = False
 
         self.fc1 = Layer(768, 768, ReLU)
         self.fc2 = Layer(768, 768, ReLU)
@@ -75,7 +82,6 @@ class BertProjector(Module):
 
                     # tot_epoch_corects += batch_corrects
                     #  accuracy = batch_corrects/vec_labels.shape[0]
-                    #  val_epoch_acc += accuracy
                         val_epoch_loss += loss   
 
                 print(tot_epoch_corects)
@@ -83,12 +89,10 @@ class BertProjector(Module):
                 self.train()
                 train_loss = train_epoch_loss/len(train_loader)
                 val_loss = val_epoch_loss/len(val_loader) 
-            #   val_acc = val_epoch_acc/len(val_loader) 
 
                 print("Epoch: {}/{}.. ".format(e+1, epochs),
                     "Training Loss: {:.3f}.. ".format(train_loss),
                     "Validation Loss: {:.3f}.. ".format(val_loss))
-                # "Validation Acc: {:.3f}.. ".format(val_acc))
 
 
 
@@ -129,8 +133,8 @@ class BertProjector(Module):
 
 
     def print_metrics(self, labels:list, predictions):
-        print("ground truth labels: {}".format(set(labels)))
-        print("prediction labels: {}".format(set(predictions)))
+      #  print("ground truth labels: {}".format(set(labels)))
+      #  print("prediction labels: {}".format(set(predictions)))
         print(metrics.classification_report(labels, predictions, labels=list(set(labels))))
         print("accuracy: {}".format(metrics.accuracy_score(labels, predictions)))
 
@@ -142,33 +146,4 @@ class BertProjector(Module):
 
 
 
-#    def tracker(self, labels, outputs, space, tracks:DataFrame):
-#        tracks = dict()
-#
-#        for index, output in enumerate(outputs):
-#            prediction = self.closest_property(output, space)
-#
-#            if prediction == labels[index]:
-#                tracks[tracks["class"]==labels[index]]["TP"] +=1          #TP
-#            else:
-#                a=0
-#            #FP
-#            #TN
-#            #FN
-#        return tracks
-
-
-
-    # given a prediction it returns the closest class
- #   def closest_property(self, prediction, space):
- #       cos = CosineSimilarity(dim=0)
- #       max_sim=0
- #       for property, row_space in space.iterrows():
- #           vector = torch.tensor(space.loc[property])
- #           sim = cos(prediction, vector).item()
- #           if sim >= max_sim:
- #               closest_candidate = property
- #               max_sim = sim
- #       return closest_candidate
-
-        #esperimento: anzichè confrontarlo solo con i vettori die 20 predicati che ti interssano, confronta con tutti, e trova a chi si avvicina di più
+ #esperimento: anzichè confrontarlo solo con i vettori die 20 predicati che ti interssano, confronta con tutti, e trova a chi si avvicina di più
