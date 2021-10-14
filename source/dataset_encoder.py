@@ -32,14 +32,18 @@ def labels2proptensor(dataset, space, props_mapping):
 
 def tokenize(sentences):
     tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
-    return  tokenizer.batch_encode_plus(
+
+    t = tokenizer.batch_encode_plus(
                 sentences,
                 add_special_tokens=True,
                 return_attention_mask=True,
-                pad_to_max_length=True,
-                max_length=512,
+                # pad_to_max_length=True,
+                max_length=160,
+                padding=True,
+                truncation=True,
                 return_tensors='pt'
             )
+    return  t
 
 
 # it checks if endoing of sentences and labels and association sentence-labels are ok
