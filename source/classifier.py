@@ -1,4 +1,4 @@
-from numpy import tanh
+from numpy import invert, tanh
 from pandas.core.frame import DataFrame
 from torch.nn.modules.loss import BCELoss, CosineEmbeddingLoss
 from transformers import DistilBertModel
@@ -10,6 +10,10 @@ import json
 from transformers import DistilBertModelWithHeads
 from transformers import AdapterConfig, DistilBertConfig
 from tqdm import tqdm
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt   
+import pprint  
+
 
 class ComposedLoss(Module):
     def __init__(self, device) -> None:
@@ -111,15 +115,16 @@ class BertProjector(Module):
                         projection, attribute = self(sentences.to(device), masks.to(device))
                         composed_loss, projection_loss, attribute_loss_value = criterion(projection, attribute, vec_labels.to(device), attribute_tensor, no_relation_tensor)
 
-                        epoch_labels += prop_labels
-                        epoch_predictions += self.convert(projection, attribute, space, device)
+                        epoch_labels += rel_labels
+                        epoch_predictions += self.convert(projection, attribute, space, device, mappings)
 
                         val_epoch_loss += composed_loss
                         val_projection_loss += projection_loss
                         val_attribute_loss += attribute_loss_value
 
 
-                self.print_metrics(epoch_labels, epoch_predictions)
+                self.print_metrics(epoch_labels, epoch_predictions, mappings)
+                self.show_confusion_matrix(epoch_labels, epoch_predictions, mappings)
                 train_loss = train_epoch_loss/len(train_loader)
                 train_projection = train_projection_loss/len(train_loader)
                 train_attribute = train_attribute_loss/len(train_loader)
@@ -138,10 +143,11 @@ class BertProjector(Module):
 
 
 
-    def convert(self, projections, attributes, space, device):
+    def convert(self, projections, attributes, space, device, mappings):
+        invert_mapping = inv_map = {v: k for k, v in mappings.items()}
         cos = CosineSimilarity(dim=1)
         # questo pezzo potrebbe essere ricevuto direttamente ceom parametro così nn deve essere computato per ogni batch
-        ps_properties = torch.Tensor()
+        ps_properties = torch.Tensor() # contains the properties vectors
         for index, row in space.iterrows():
             label_vec = torch.tensor([space.loc[index]])
             ps_properties = torch.cat([ps_properties, label_vec], dim=0)
@@ -152,7 +158,8 @@ class BertProjector(Module):
                 projection = projection.reshape(1,-1)
                 sims = cos(projection.to(device), ps_properties.to(device))
                 arg_max = torch.argmax(sims).item()
-                predictions += (space.index[arg_max],)
+                prediction = invert_mapping[space.index[arg_max]]
+                predictions += (prediction,)
                 if space.index[arg_max] == 'no_relation':
                     print('unexpected no_relation')
             else:
@@ -162,10 +169,10 @@ class BertProjector(Module):
 
 
 
-    def print_metrics(self, labels:list, predictions):
+    def print_metrics(self, labels:list, predictions, mappings):
       #  print("ground truth labels: {}".format(set(labels)))
       #  print("prediction labels: {}".format(set(predictions)))
-        print(metrics.classification_report(labels, predictions, labels=list(set(labels))))
+        print(metrics.classification_report(labels, predictions, labels=list(mappings)))
         print("accuracy: {}".format(metrics.accuracy_score(labels, predictions)))
 
      #   corrects =0
@@ -175,6 +182,18 @@ class BertProjector(Module):
      #   print("rechecked accuracy: {}".format(corrects/len(labels)))  
 
 
+    def show_confusion_matrix(self, labels:list, predictions, mappings):
+        cm = confusion_matrix(y_true=labels, y_pred=predictions, labels=list(mappings))
+        #print(cm)
+        cmd_obj = ConfusionMatrixDisplay(cm, display_labels=list(mappings))
+        cmd_obj.plot()
+        cmd_obj.ax_.set(
+                        title='Confusion Matrix', 
+                        xlabel='Predicted Properties', 
+                        ylabel='Actual Properties')
+        plt.show()
+        plt.xticks(rotation=70, ha="right")
+        plt.savefig('boh.png', bbox_inches='tight')
 
 
 
