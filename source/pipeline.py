@@ -73,14 +73,14 @@ def main():
     p = Pipeline("/home/ralvaprincipe/ABSTAT4RE/")
 
     ################################################### Profile ####################################################################################################
-   # profile = Profile(p.profiles_dir+"/dbpedia-2016-10-full", "frequency", clean=True, artificial_props=True)
+  #  profile = Profile(p.profiles_dir+"/dbpedia-2016-10-full", "frequency", clean=True, artificial_props=True)
 
     #profile = Profile(p.profiles_dir+"/dbpedia-2016-10-full", "frequency", clean=False, artificial_props=False)
     #check.check_profile(profile.df())
     
     
     #################################################### Property Space ##############################################################################################
-    #space = p.process_property_space(mode="create", profile=profile, output=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims_NoRelNew.csv" )
+   # space = p.process_property_space(mode="create", profile=profile, output=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims_NoRelNew.csv" )
     #space = p.process_property_space(mode="load", dump=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims.csv")
     #space = p.process_property_space(mode="load", dump=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims_NoRelFixed.csv")
     space = p.process_property_space(mode="load", dump=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims_NoRelNew.csv")
@@ -106,9 +106,9 @@ def main():
     #train_loader = p.prepare4training(batch=batch, dataset=train.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt")
     #val_loader = p.prepare4training(batch=batch, dataset=validation.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt")
     #test_loader = p.prepare4training(batch=batch, dataset=test.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_test_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt")
-    #train_loader = p.prepare4training(batch=batch, dataset=train.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims_NoRelNew.pt")
-    #val_loader = p.prepare4training(batch=batch, dataset=validation.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims_NoRelNew.pt")
-    #test_loader = p.prepare4training(batch=batch, dataset=test.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_test_dbp2016-full-onlyNonZeroDims_NoRelNew.pt")
+   # train_loader = p.prepare4training(batch=batch, dataset=train.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims_NoRelNew.pt")
+   # val_loader = p.prepare4training(batch=batch, dataset=validation.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims_NoRelNew.pt")
+   # test_loader = p.prepare4training(batch=batch, dataset=test.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_test_dbp2016-full-onlyNonZeroDims_NoRelNew.pt")
 
     #train_loader = p.prepare4training(batch=batch, dataset=train.df(), dump=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims.pt", space=space.df(), mappings=mappings)
     #val_loader = p.prepare4training(batch=batch, dataset=validation.df(), dump=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims.pt", space=space.df(),  mappings=mappings)
@@ -124,28 +124,38 @@ def main():
 
 
     ################################################### Baselilne ######################################################################################################
-    #    classifier = BaselineClassifier(space.df().shape[1], True).to(p.device)
-    #    lr = 3e-5
-    #    epochs = 70
-    #    criterion = CrossEntropyLoss()
-    #    #criterion = NLLLoss()
-    #    optimizer = torch.optim.Adam(params = classifier.parameters(), lr=lr)
+    baseline = BaselineClassifier(space.df().shape[1], True).to(p.device)
+    lr = 3e-5
+    epochs = 70
+    criterion = CrossEntropyLoss()
+    #criterion = NLLLoss()
+    optimizer = torch.optim.Adam(params = baseline.parameters(), lr=lr)
+    patience = 1
 
-    #    classifier.train_loop(train_loader, val_loader, criterion, optimizer, epochs, p.device, space.df(), mappings)
+    baseline.train_loop(train_loader, val_loader, criterion, optimizer, epochs, patience, p.device, space.df(), mappings, "baseline")
 
 
     ################################################### Classifier ######################################################################################################
 
-    classifier = BertProjector(space.df().shape[1], True).to(p.device)
+    abstat4re = BertProjector(space.df().shape[1], True).to(p.device)
     lr = 3e-5
     epochs = 70
     criterion = ComposedLoss(p.device) 
-    optimizer = torch.optim.Adam(params = classifier.parameters(), lr=lr)
+    optimizer = torch.optim.Adam(params = abstat4re.parameters(), lr=lr)
+    patience = 1
+    
+    abstat4re.train_loop(train_loader, val_loader, criterion, optimizer, epochs, patience, p.device, space.df(), mappings, "abstat4re")
+    
 
-    classifier.train_loop(train_loader, val_loader, criterion, optimizer, epochs, p.device, space.df(), mappings)
+    ###################################################### TEST ########################################################################################################
+    
+    baseline = BaselineClassifier(space.df().shape[1], True).to(p.device)
+    baseline.load_state_dict(torch.load('results/baseline.pt'))
+    baseline.test_loop(test_loader, p.device, space.df(), mappings)
 
-
-    ########################################################################################################################################################################
+    abstat4re = BertProjector(space.df().shape[1], True).to(p.device)
+    abstat4re.load_state_dict(torch.load('/resultsabstat4re.pt'))
+    abstat4re.test_loop(test_loader, p.device, space.df(), mappings)
 
 
 

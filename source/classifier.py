@@ -11,8 +11,8 @@ from transformers import DistilBertModelWithHeads
 from transformers import AdapterConfig, DistilBertConfig
 from tqdm import tqdm
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-import matplotlib.pyplot as plt   
-import pprint  
+import matplotlib.pyplot as plt    
+from pytorchtools import EarlyStopping
 
 
 class ComposedLoss(Module):
@@ -87,7 +87,10 @@ class BertProjector(Module):
         return projection, attribute
     
 
-    def train_loop(self, train_loader, val_loader, criterion, optimizer, epochs, device, space: DataFrame, mappings):
+    def train_loop(self, train_loader, val_loader, criterion, optimizer, epochs, patience, device, space: DataFrame, mappings, name):
+        # initialize the early_stopping object
+        early_stopping = EarlyStopping(patience=patience, verbose=True, path="results/" + name+".pt")
+        
         for e in tqdm(range(epochs)):
             train_epoch_loss = 0
             train_projection_loss = 0
@@ -106,7 +109,7 @@ class BertProjector(Module):
                 train_attribute_loss += attribute_loss_value
             
             self.eval()
-            if (e + 1) % 2 == 0:
+            if (e + 1) % 1 == 0:
                 val_epoch_loss = 0
                 val_projection_loss, val_attribute_loss = 0, 0
                 epoch_labels, epoch_predictions = tuple(), tuple()
@@ -123,7 +126,7 @@ class BertProjector(Module):
                         val_attribute_loss += attribute_loss_value
 
 
-                self.print_metrics(epoch_labels, epoch_predictions, mappings)
+                accuracy, macro_f1 = self.print_metrics(epoch_labels, epoch_predictions, mappings)
                 self.show_confusion_matrix(epoch_labels, epoch_predictions, mappings)
                 train_loss = train_epoch_loss/len(train_loader)
                 train_projection = train_projection_loss/len(train_loader)
@@ -139,12 +142,20 @@ class BertProjector(Module):
                     "Val_Loss: {:.3f}.. ".format(val_loss),
                     "Val_projection_Loss: {:.3f}.. ".format(val_projection),
                     "Val_attribute_Loss: {:.3f}.. ".format(val_attribute))
-                    
+
+
+                # early_stopping needs the validation loss to check if it has decresed, 
+                # and if it has, it will make a checkpoint of the current model
+                early_stopping(-macro_f1, self) # here i use f1. I put the - before to keep unchanged the function code
+                
+                if early_stopping.early_stop:
+                    print("Early stopping")
+                    break
 
 
 
     def convert(self, projections, attributes, space, device, mappings):
-        invert_mapping = inv_map = {v: k for k, v in mappings.items()}
+        reverse_mapping = inv_map = {v: k for k, v in mappings.items()}
         cos = CosineSimilarity(dim=1)
         # questo pezzo potrebbe essere ricevuto direttamente ceom parametro così nn deve essere computato per ogni batch
         ps_properties = torch.Tensor() # contains the properties vectors
@@ -158,7 +169,7 @@ class BertProjector(Module):
                 projection = projection.reshape(1,-1)
                 sims = cos(projection.to(device), ps_properties.to(device))
                 arg_max = torch.argmax(sims).item()
-                prediction = invert_mapping[space.index[arg_max]]
+                prediction = reverse_mapping[space.index[arg_max]]
                 predictions += (prediction,)
                 if space.index[arg_max] == 'no_relation':
                     print('unexpected no_relation')
@@ -168,18 +179,14 @@ class BertProjector(Module):
         return predictions
 
 
-
     def print_metrics(self, labels:list, predictions, mappings):
-      #  print("ground truth labels: {}".format(set(labels)))
-      #  print("prediction labels: {}".format(set(predictions)))
         print(metrics.classification_report(labels, predictions, labels=list(mappings)))
-        print("accuracy: {}".format(metrics.accuracy_score(labels, predictions)))
-
-     #   corrects =0
-     #   for label, prediction in zip(labels, predictions):
-     #       if label==prediction:
-     #           corrects += 1
-     #   print("rechecked accuracy: {}".format(corrects/len(labels)))  
+        report = metrics.classification_report(labels, predictions, labels=list(mappings), output_dict=True)
+        accuracy = report['accuracy']
+        macro_f1 = report['macro avg']['f1-score']
+        print("accuracy: {}".format(accuracy))
+        print("F1: {}".format(macro_f1))
+        return accuracy, macro_f1
 
 
     def show_confusion_matrix(self, labels:list, predictions, mappings):
@@ -193,25 +200,21 @@ class BertProjector(Module):
                         ylabel='Actual Properties')
         plt.show()
         plt.xticks(rotation=70, ha="right")
-        plt.savefig('boh.png', bbox_inches='tight')
+        plt.savefig('results/abstat4re_cm.png', bbox_inches='tight')
 
 
 
+    def test_loop(self, test_laoder, device, space: DataFrame, mappings):
+        self.eval()
+        epoch_labels, epoch_predictions = tuple(), tuple()
+        with torch.no_grad():
+            for sentences, masks, vec_labels, rel_labels, prop_labels, int_labels, no_relation_tensor, attribute_tensor in test_laoder:
+                projection, attribute = self(sentences.to(device), masks.to(device))
+                epoch_labels += rel_labels
+                epoch_predictions += self.convert(projection, attribute, space, device, mappings)
 
-  #  def calculate_corrects(self, outputs, space, vec_labels, device):
-  #      cos = CosineSimilarity(dim=0)
-  #      batch_corrects = 0
-  #      for i in range(vec_labels.shape[0]):
-  #          max_sim=0
-  #          closest_candidate=None
-  #          for property, row_space in space.iterrows():
-  #              vector = torch.tensor(space.loc[property]).to(device) 
-  #              sim = cos(outputs[i], vector).item()
-  #              if sim >= max_sim:
-  #                  closest_candidate = vector
-  #                  max_sim = sim
-  #          if torch.equal(vec_labels[i], closest_candidate):
-  #              batch_corrects += 1
-  #      return batch_corrects
+        self.print_metrics(epoch_labels, epoch_predictions, mappings)
+        self.show_confusion_matrix(epoch_labels, epoch_predictions, mappings)
+
 
  #esperimento: anzichè confrontarlo solo con i vettori die 20 predicati che ti interssano, confronta con tutti, e trova a chi si avvicina di più
