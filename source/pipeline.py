@@ -130,7 +130,7 @@ def main():
     criterion = CrossEntropyLoss()
     #criterion = NLLLoss()
     optimizer = torch.optim.Adam(params = baseline.parameters(), lr=lr)
-    patience = 1
+    patience = 12
 
     baseline.train_loop(train_loader, val_loader, criterion, optimizer, epochs, patience, p.device, space.df(), mappings, "baseline")
 
@@ -142,7 +142,7 @@ def main():
     epochs = 70
     criterion = ComposedLoss(p.device) 
     optimizer = torch.optim.Adam(params = abstat4re.parameters(), lr=lr)
-    patience = 1
+    patience = 12
     
     abstat4re.train_loop(train_loader, val_loader, criterion, optimizer, epochs, patience, p.device, space.df(), mappings, "abstat4re")
     
@@ -154,7 +154,7 @@ def main():
     baseline.test_loop(test_loader, p.device, space.df(), mappings)
 
     abstat4re = BertProjector(space.df().shape[1], True).to(p.device)
-    abstat4re.load_state_dict(torch.load('/resultsabstat4re.pt'))
+    abstat4re.load_state_dict(torch.load('/results/abstat4re.pt'))
     abstat4re.test_loop(test_loader, p.device, space.df(), mappings)
 
 
