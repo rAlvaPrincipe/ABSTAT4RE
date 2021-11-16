@@ -85,32 +85,32 @@ class PropertySpace:
         subspace.drop(zero_columns, axis=1, inplace=True)
 
         # performs the dsambiguationfor that relations that have the same mapped property
-        count = 0
-        to_drop = set()
-        disambiguated = [ "http://dbpedia.org/ontology/headquarter_@1",
-        "http://dbpedia.org/ontology/headquarter_@2",
-        "http://dbpedia.org/ontology/headquarter_@3",
-        "http://dbpedia.org/ontology/membership_@1",
-        "http://dbpedia.org/ontology/membership_@2",
-        "http://dbpedia.org/ontology/membership_@3",
-        "http://dbpedia.org/ontology/residence_@1",
-        "http://dbpedia.org/ontology/residence_@2",
-        "http://dbpedia.org/ontology/residence_@3",
-        "http://dbpedia.org/ontology/alias_@1",
-        "http://dbpedia.org/ontology/alias_@2"]
-        for prop in disambiguated:
-            if "@" in prop:
-                count += 1
-                orignal_prop = prop[:prop.find("@")-1]
-                # add a column for the additional dimension
-                dim_name = "add"+ str(count)
-                subspace[dim_name] = 0
-                # the artificial property is basically a copy of the original one
-                subspace.loc[prop]=subspace.loc[orignal_prop]
-                subspace.loc[prop, dim_name] = 1
-                to_drop.add(orignal_prop)
+       # count = 0
+       # to_drop = set()
+       # disambiguated = [ "http://dbpedia.org/ontology/headquarter_@1",
+       # "http://dbpedia.org/ontology/headquarter_@2",
+       # "http://dbpedia.org/ontology/headquarter_@3",
+       # "http://dbpedia.org/ontology/membership_@1",
+       # "http://dbpedia.org/ontology/membership_@2",
+       # "http://dbpedia.org/ontology/membership_@3",
+       # "http://dbpedia.org/ontology/residence_@1",
+       # "http://dbpedia.org/ontology/residence_@2",
+       # "http://dbpedia.org/ontology/residence_@3",
+       # "http://dbpedia.org/ontology/alias_@1",
+       # "http://dbpedia.org/ontology/alias_@2"]
+       # for prop in disambiguated:
+       #     if "@" in prop:
+       #         count += 1
+       #         orignal_prop = prop[:prop.find("@")-1]
+       #         # add a column for the additional dimension
+       #         dim_name = "add"+ str(count)
+       #         subspace[dim_name] = 0
+       #         # the artificial property is basically a copy of the original one
+       #         subspace.loc[prop]=subspace.loc[orignal_prop]
+       #         subspace.loc[prop, dim_name] = 1
+       #         to_drop.add(orignal_prop)
 
-        subspace.drop(to_drop, axis=0, inplace=True)
+       # subspace.drop(to_drop, axis=0, inplace=True)
 
         # setting artificial class "no_relation". NOTICe that this class will not be never considered, it's here only to avoid major modificationsz
         subspace.loc["no_relation"] = -1

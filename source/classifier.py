@@ -2,7 +2,7 @@ from numpy import invert, tanh
 from pandas.core.frame import DataFrame
 from torch.nn.modules.loss import BCELoss, CosineEmbeddingLoss
 from transformers import DistilBertModel
-from torch.nn import Module, Linear, ReLU, Sigmoid, Tanh
+from torch.nn import Module, Linear, ReLU, Sigmoid, Tanh, Dropout
 import torch
 from torch.nn import CosineSimilarity
 from sklearn import metrics
@@ -28,7 +28,7 @@ class ComposedLoss(Module):
         # calculate loss for every sample despite "no_relation"
         projection_loss_value = self.projection_loss(projected_vectors, groundtruth_vectors, torch.ones(projected_vectors.shape[0]).to(self.device))
         
-        # remove loss for samples that are "no_relaion"
+        # remove loss for samples that are "no_relation"
         projection_loss_value_with_no_relation = torch.where(no_relation_tensor.to(self.device), zeros, projection_loss_value)
 
         # obtain a single scalar for the losses of the batch
@@ -45,7 +45,7 @@ class Layer(Module):
         super().__init__()
         self.fc = Linear(inp, out)
         self.act = act()
-        
+
     def forward(self, x):
         return self.act(self.fc(x))
 
@@ -146,7 +146,7 @@ class BertProjector(Module):
 
                 # early_stopping needs the validation loss to check if it has decresed, 
                 # and if it has, it will make a checkpoint of the current model
-                early_stopping(-macro_f1, self) # here i use f1. I put the - before to keep unchanged the function code
+                early_stopping(val_loss, self) # here i use f1. I put the - before to keep unchanged the function code
                 
                 if early_stopping.early_stop:
                     print("Early stopping")
@@ -154,8 +154,8 @@ class BertProjector(Module):
 
 
 
-    def convert(self, projections, attributes, space, device, mappings):
-        reverse_mapping = inv_map = {v: k for k, v in mappings.items()}
+    def convert(self, projections, attributes, space, device, mappings, threshold=0.5):
+        reverse_mapping = {v: k for k, v in mappings.items()}
         cos = CosineSimilarity(dim=1)
         # questo pezzo potrebbe essere ricevuto direttamente ceom parametro così nn deve essere computato per ogni batch
         ps_properties = torch.Tensor() # contains the properties vectors
@@ -165,7 +165,7 @@ class BertProjector(Module):
         
         predictions = tuple()
         for projection, attribute in zip(projections, attributes) :
-            if attribute < 0.5:
+            if attribute < threshold:
                 projection = projection.reshape(1,-1)
                 sims = cos(projection.to(device), ps_properties.to(device))
                 arg_max = torch.argmax(sims).item()
@@ -184,9 +184,10 @@ class BertProjector(Module):
         report = metrics.classification_report(labels, predictions, labels=list(mappings), output_dict=True)
         accuracy = report['accuracy']
         macro_f1 = report['macro avg']['f1-score']
+        no_rel_f1 = report['no_relation']['f1-score']
         print("accuracy: {}".format(accuracy))
         print("F1: {}".format(macro_f1))
-        return accuracy, macro_f1
+        return accuracy, macro_f1, no_rel_f1
 
 
     def show_confusion_matrix(self, labels:list, predictions, mappings):
@@ -195,26 +196,27 @@ class BertProjector(Module):
         cmd_obj = ConfusionMatrixDisplay(cm, display_labels=list(mappings))
         cmd_obj.plot()
         cmd_obj.ax_.set(
-                        title='Confusion Matrix', 
-                        xlabel='Predicted Properties', 
-                        ylabel='Actual Properties')
+                        xlabel='Predicted Relations', 
+                        ylabel='Actual Relations')
         plt.show()
-        plt.xticks(rotation=70, ha="right")
-        plt.savefig('results/abstat4re_cm.png', bbox_inches='tight')
+        plt.xticks(rotation=28, ha="right")
+        plt.savefig('results/abstat4re_cm.png', bbox_inches='tight', dpi=1000)
 
 
 
-    def test_loop(self, test_laoder, device, space: DataFrame, mappings):
+    def test_loop(self, test_laoder, device, space: DataFrame, mappings, threshold=0.5):
+        print(threshold)
         self.eval()
         epoch_labels, epoch_predictions = tuple(), tuple()
         with torch.no_grad():
-            for sentences, masks, vec_labels, rel_labels, prop_labels, int_labels, no_relation_tensor, attribute_tensor in test_laoder:
+            for sentences, masks, vec_labelmacro_f1s, rel_labels, prop_labels, int_labels, no_relation_tensor, attribute_tensor in test_laoder:
                 projection, attribute = self(sentences.to(device), masks.to(device))
                 epoch_labels += rel_labels
-                epoch_predictions += self.convert(projection, attribute, space, device, mappings)
+                epoch_predictions += self.convert(projection, attribute, space, device, mappings, threshold)
 
-        self.print_metrics(epoch_labels, epoch_predictions, mappings)
+        accuracy, macro_f1, no_rel_f1 = self.print_metrics(epoch_labels, epoch_predictions, mappings)
         self.show_confusion_matrix(epoch_labels, epoch_predictions, mappings)
+        return accuracy, macro_f1, no_rel_f1
 
 
  #esperimento: anzichè confrontarlo solo con i vettori die 20 predicati che ti interssano, confronta con tutti, e trova a chi si avvicina di più

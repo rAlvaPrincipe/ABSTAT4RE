@@ -40,7 +40,7 @@ class BaselineClassifier(Module):
 
         self.fc1 = Layer(768, 256, ReLU)
         self.fc2 = Layer(256, 64, ReLU)
-        self.fc3 = Linear(64, 19) 
+        self.fc3 = Layer(64, 19, Sigmoid)
        # self.logsoftmax = LogSoftmax(dim=1)
    
       
@@ -81,8 +81,7 @@ class BaselineClassifier(Module):
                         loss = criterion(log_probs, int_labels.to(device))
 
                         # getting prediction labels
-                        probs = torch.exp(log_probs)
-                        top_prob, top_class = probs.topk(1, dim=1)
+                        top_prob, top_class = log_probs.topk(1, dim=1)
                         top_class = top_class.reshape(current_batch_size)
                         predictions = self.integer_to_labels(top_class, mappings)
 
@@ -105,7 +104,7 @@ class BaselineClassifier(Module):
               
                 # early_stopping needs the validation loss to check if it has decresed, 
                 # and if it has, it will make a checkpoint of the current model
-                early_stopping(-macro_f1, self) # here i use f1. I put the - before to keep unchanged the function code
+                early_stopping(val_loss, self) # here i use f1. I put the - before to keep unchanged the function code
                 
                 if early_stopping.early_stop:
                     print("Early stopping")
@@ -143,12 +142,11 @@ class BaselineClassifier(Module):
         cmd_obj = ConfusionMatrixDisplay(cm, display_labels=list(mappings))
         cmd_obj.plot()
         cmd_obj.ax_.set(
-                        title='Confusion Matrix', 
                         xlabel='Predicted Properties', 
                         ylabel='Actual Properties')
         plt.show()
-        plt.xticks(rotation=70, ha="right")
-        plt.savefig('results/baseline_cm.png', bbox_inches='tight')
+        plt.xticks(rotation=28, ha="right")
+        plt.savefig('results/baseline_cm.png', bbox_inches='tight', dpi=1000)
 
 
 
@@ -160,8 +158,7 @@ class BaselineClassifier(Module):
                 current_batch_size = sentences.shape[0]
                 log_probs = self(sentences.to(device), masks.to(device))
                 # getting prediction labels
-                probs = torch.exp(log_probs)
-                top_prob, top_class = probs.topk(1, dim=1)
+                top_prob, top_class = log_probs.topk(1, dim=1)
                 top_class = top_class.reshape(current_batch_size)
                 predictions = self.integer_to_labels(top_class, mappings)
 

@@ -14,6 +14,9 @@ from property_space import PropertySpace
 import pandas as pd
 from check import Check as check
 from baseline_classifier import BaselineClassifier
+import numpy as np
+import random
+import matplotlib.pyplot as plt
 
 class Pipeline:
 
@@ -70,6 +73,9 @@ class Pipeline:
 
 
 def main():
+    
+    s = 666 #seed
+    
     p = Pipeline("/home/ralvaprincipe/ABSTAT4RE/")
 
     ################################################### Profile ####################################################################################################
@@ -80,7 +86,7 @@ def main():
     
     
     #################################################### Property Space ##############################################################################################
-   # space = p.process_property_space(mode="create", profile=profile, output=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims_NoRelNew.csv" )
+  #  space = p.process_property_space(mode="create", profile=profile, output=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims_NoRelNew.csv" )
     #space = p.process_property_space(mode="load", dump=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims.csv")
     #space = p.process_property_space(mode="load", dump=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims_NoRelFixed.csv")
     space = p.process_property_space(mode="load", dump=p.spaces_dir+"/PS_dbp2016-full_clean_nonZeroDims_NoRelNew.csv")
@@ -101,14 +107,14 @@ def main():
     
     #check.check_vec_labels_correcteness(validation.df(), space.df(), mappings)
 
-    batch = 128
+    batch = 64
     
     #train_loader = p.prepare4training(batch=batch, dataset=train.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt")
     #val_loader = p.prepare4training(batch=batch, dataset=validation.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt")
     #test_loader = p.prepare4training(batch=batch, dataset=test.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_test_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt")
-   # train_loader = p.prepare4training(batch=batch, dataset=train.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims_NoRelNew.pt")
-   # val_loader = p.prepare4training(batch=batch, dataset=validation.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims_NoRelNew.pt")
-   # test_loader = p.prepare4training(batch=batch, dataset=test.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_test_dbp2016-full-onlyNonZeroDims_NoRelNew.pt")
+    #train_loader = p.prepare4training(batch=batch, dataset=train.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims_NoRelNew.pt")
+    #val_loader = p.prepare4training(batch=batch, dataset=validation.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims_NoRelNew.pt")
+    #test_loader = p.prepare4training(batch=batch, dataset=test.df(), space=space.df(), mappings=mappings, output=p.vec_labels+"labels-vec_kbp37_test_dbp2016-full-onlyNonZeroDims_NoRelNew.pt")
 
     #train_loader = p.prepare4training(batch=batch, dataset=train.df(), dump=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims.pt", space=space.df(), mappings=mappings)
     #val_loader = p.prepare4training(batch=batch, dataset=validation.df(), dump=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims.pt", space=space.df(),  mappings=mappings)
@@ -116,35 +122,50 @@ def main():
     #train_loader = p.prepare4training(batch=batch, dataset=train.df(), dump=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt", space=space.df(), mappings=mappings)
     #val_loader = p.prepare4training(batch=batch, dataset=validation.df(), dump=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt", space=space.df(),  mappings=mappings)
     #test_loader = p.prepare4training(batch=batch, dataset=test.df(), dump=p.vec_labels+"labels-vec_kbp37_test_dbp2016-full-onlyNonZeroDims_NoRelFixed.pt", space=space.df(),  mappings=mappings)
-    train_loader = p.prepare4training(batch=batch, dataset=train.df(), dump=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims_NoRelNew.pt", space=space.df(), mappings=mappings)
-    val_loader = p.prepare4training(batch=batch, dataset=validation.df(), dump=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims_NoRelNew.pt", space=space.df(),  mappings=mappings)
+  #  train_loader = p.prepare4training(batch=batch, dataset=train.df(), dump=p.vec_labels+"labels-vec_kbp37_train_dbp2016-full-onlyNonZeroDims_NoRelNew.pt", space=space.df(), mappings=mappings)
+  #  val_loader = p.prepare4training(batch=batch, dataset=validation.df(), dump=p.vec_labels+"labels-vec_kbp37_val_dbp2016-full-onlyNonZeroDims_NoRelNew.pt", space=space.df(),  mappings=mappings)
     test_loader = p.prepare4training(batch=batch, dataset=test.df(), dump=p.vec_labels+"labels-vec_kbp37_test_dbp2016-full-onlyNonZeroDims_NoRelNew.pt", space=space.df(),  mappings=mappings)
 
    # check.check_label_vectorization(val_loader, space=space.df())
 
 
     ################################################### Baselilne ######################################################################################################
-    baseline = BaselineClassifier(space.df().shape[1], True).to(p.device)
-    lr = 3e-5
-    epochs = 70
-    criterion = CrossEntropyLoss()
-    #criterion = NLLLoss()
-    optimizer = torch.optim.Adam(params = baseline.parameters(), lr=lr)
-    patience = 12
+    torch.manual_seed(s)
+    torch.cuda.manual_seed(s)
+    np.random.seed(s)
+    random.seed(s)
+    torch.backends.cudnn.enabled=False
+    torch.backends.cudnn.deterministic=True
+    torch.cuda.empty_cache()
 
-    baseline.train_loop(train_loader, val_loader, criterion, optimizer, epochs, patience, p.device, space.df(), mappings, "baseline")
+    #baseline = BaselineClassifier(space.df().shape[1], True).to(p.device)
+    #lr = 3e-5test_loader
+    #epochs = 120
+    #criterion = CrossEntropyLoss()
+    #optimizer = torch.optim.Adam(params = baseline.parameters(), lr=lr)
+    #patience = 7
+
+    #baseline.train_loop(train_loader, val_loader, criterion, optimizer, epochs, patience, p.device, space.df(), mappings, "baseline")
 
 
     ################################################### Classifier ######################################################################################################
 
-    abstat4re = BertProjector(space.df().shape[1], True).to(p.device)
-    lr = 3e-5
-    epochs = 70
-    criterion = ComposedLoss(p.device) 
-    optimizer = torch.optim.Adam(params = abstat4re.parameters(), lr=lr)
-    patience = 12
-    
-    abstat4re.train_loop(train_loader, val_loader, criterion, optimizer, epochs, patience, p.device, space.df(), mappings, "abstat4re")
+   # torch.manual_seed(s)
+   # torch.cuda.manual_seed(s)
+   # np.random.seed(s)
+   # random.seed(s)
+   # torch.backends.cudnn.enabled=False
+   # torch.backends.cudnn.deterministic=True
+   # torch.cuda.empty_cache()
+
+   # abstat4re = BertProjector(space.df().shape[1], True).to(p.device)
+   # lr = 3e-5
+   # epochs = 120
+   # criterion = ComposedLoss(p.device) 
+   # optimizer = torch.optim.Adam(params = abstat4re.parameters(), lr=lr)
+   # patience = 7
+   # 
+    #abstat4re.train_loop(train_loader, val_loader, criterion, optimizer, epochs, patience, p.device, space.df(), mappings, "abstat4re")
     
 
     ###################################################### TEST ########################################################################################################
@@ -154,9 +175,24 @@ def main():
     baseline.test_loop(test_loader, p.device, space.df(), mappings)
 
     abstat4re = BertProjector(space.df().shape[1], True).to(p.device)
-    abstat4re.load_state_dict(torch.load('/results/abstat4re.pt'))
-    abstat4re.test_loop(test_loader, p.device, space.df(), mappings)
+    abstat4re.load_state_dict(torch.load('results/abstat4re.pt'))
+    abstat4re.test_loop(test_loader, p.device, space.df(), mappings, 0.41)
 
+
+    # find threshold
+    if False:
+        f1_scores, no_rel_f1_scores, thresholds= list(), list(), list()
+        for threshold in range(39, 46, 1):
+            threshold /= 100
+            accuracy, macro_f1, no_rel_f1 = abstat4re.test_loop(val_loader, p.device, space.df(), mappings, threshold)
+            thresholds.append(threshold)
+            f1_scores.append(macro_f1)
+            no_rel_f1_scores.append(no_rel_f1)
+        plt.clf()
+        plt.plot(thresholds, f1_scores, 'r', label='model F1')
+    # plt.plot(thresholds, no_rel_f1_scores, 'g', label='no_rel F1')
+        plt.legend(loc='best')
+        plt.savefig("threshold.png")
 
 
 if __name__ == "__main__":
