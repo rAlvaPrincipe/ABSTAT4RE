@@ -3,6 +3,9 @@
 ## Overview
 ABSTAT4RE is a relation extraction (RE) model that integrates knowledge from pre-trained language models with structured knowledge from Knowledge Graph (KG) profiles. By leveraging ABSTAT profiles, the model enhances RE tasks by injecting property information extracted from the KG, leading to improved relation classification.
 
+<img src="model.png" alt="Model" width="1000">
+
+
 ## Features
 - **Multitask Learning Architecture**: Simultaneously classifies relations and projects sentences into a structured property space.
 - **Integration with ABSTAT Profiles**: Uses KG patterns and statistics to inform relation extraction.
